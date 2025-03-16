@@ -1,0 +1,76 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    flex-direction: column;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-theme {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+#theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    font-size: 28px;
+    color: #777;
+    transition: color 0.3s ease;
+}
+
+body.dark-theme #theme-toggle {
+    color: #bbb;
+}
+
+#myButton {
+    padding: 16px 32px;
+    font-size: 18px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 10px;
+}
+
+#myButton:hover {
+    background-color: #1976d2;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+#resetButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+#resetButton:hover {
+    background-color: #bdbdbd;
+}
+
+#output {
+    margin-top: 40px;
+    font-size: 22px;
+    text-align: center;
+    color: #555;
+}
+
+body.dark-theme #output {
+    color: #ccc;
+}
