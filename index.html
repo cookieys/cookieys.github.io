@@ -1,18 +1,247 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Simple Click App</title>
-<link rel=stylesheet href=style.css>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel=stylesheet>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel=stylesheet>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful Single Page</title>
+    <style>
+        /* --- Basic Reset & Font --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth; /* Smooth scrolling for internal links */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa; /* Light grey background */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensure footer stays at bottom */
+        }
+
+        /* --- Container --- */
+        .container {
+            width: 90%;
+            max-width: 1100px; /* Max width for larger screens */
+            margin: 0 auto; /* Center the container */
+            padding: 20px 0;
+        }
+
+        /* --- Header --- */
+        header {
+            background: #343a40; /* Dark background */
+            color: #ffffff;
+            padding: 1.5rem 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300; /* Lighter font weight */
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #adb5bd; /* Lighter text color */
+        }
+
+        /* --- Navigation (Simple) --- */
+        nav ul {
+            list-style: none;
+            padding: 1rem 0;
+            text-align: center;
+            background: #e9ecef; /* Light background for nav */
+        }
+
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #007bff; /* Bootstrap blue */
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: #0056b3; /* Darker blue on hover */
+        }
+
+        /* --- Main Content --- */
+        main {
+            flex-grow: 1; /* Allow main content to fill available space */
+            padding: 2rem 0;
+        }
+
+        section {
+            margin-bottom: 2.5rem;
+            padding: 2rem;
+            background: #ffffff; /* White background for sections */
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        section h2 {
+            font-size: 2rem;
+            color: #343a40; /* Dark heading color */
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #007bff; /* Accent border */
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        /* --- Image Styling --- */
+        img.responsive-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 1.5rem auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* --- Button Styling --- */
+        .cta-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .cta-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px); /* Slight lift effect */
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+
+        /* --- Footer --- */
+        footer {
+            background: #343a40;
+            color: #adb5bd;
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: auto; /* Pushes footer to bottom */
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            section h2 {
+                font-size: 1.75rem;
+            }
+
+            nav ul li {
+                display: block; /* Stack nav items */
+                margin: 10px 0;
+            }
+
+            .container {
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+             header p {
+                font-size: 1rem;
+            }
+             section h2 {
+                font-size: 1.5rem;
+            }
+            .cta-button {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                width: 100%; /* Make button full width */
+            }
+        }
+    </style>
 </head>
 <body>
-<div id=theme-toggle>
-<i id=theme-icon class=material-icons>brightness_4</i>
-</div>
-<button id=myButton>Click Me</button>
-<button id=resetButton>Reset</button>
-<div id=output></div>
-<script src=script.js></script>
+
+    <header>
+        <div class="container">
+            <h1>My Awesome Project</h1>
+            <p>A simple, elegant, single-page website example.</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section id="about">
+            <h2>About Us</h2>
+            <p>Welcome to this demonstration page! This entire website exists within a single HTML file, leveraging embedded CSS for styling. It's designed to be clean, responsive, and easy to understand.</p>
+            <img src="https://via.placeholder.com/600x300.png?text=Placeholder+Image" alt="Placeholder Image" class="responsive-img">
+            <p>We aim to showcase how much can be achieved with just HTML and CSS, perfect for simple portfolio pages, project landing pages, or quick prototypes.</p>
+        </section>
+
+        <section id="features">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Single File:</strong> All HTML, CSS, and basic JS in one place.</li>
+                <li><strong>Responsive Design:</strong> Adapts beautifully to desktop, tablet, and mobile screens.</li>
+                <li><strong>Clean Code:</strong> Well-commented CSS for easy modification.</li>
+                <li><strong>Modern Look:</strong> Uses a simple, contemporary color scheme and layout.</li>
+                <li><strong>Smooth Scrolling:</strong> Uses `scroll-behavior: smooth` for internal links.</li>
+            </ul>
+            <a href="#" class="cta-button">Learn More (Example Button)</a>
+        </section>
+
+        <section id="contact">
+            <h2>Get In Touch</h2>
+            <p>This is a static example, so there's no functional contact form. However, you could easily add your email address or links to your social media profiles here.</p>
+            <p>For example: Reach out via <a href="mailto:email@example.com">email@example.com</a>.</p>
+            <a href="mailto:email@example.com" class="cta-button">Send Us an Email</a>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p id="copyright">© Placeholder Year. Your Website Name. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple script to update the copyright year automatically
+        const currentYear = new Date().getFullYear();
+        document.getElementById('copyright').textContent = `© ${currentYear}. Your Website Name. All rights reserved.`;
+    </script>
+
 </body>
 </html>
