@@ -4,7 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beautiful Single Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
+        /* --- Variables & Custom Properties --- */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3f37c9;
+            --accent: #f72585;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --success: #4cc9f0;
+            --font-main: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+        }
+
         /* --- Basic Reset & Font --- */
         * {
             margin: 0;
@@ -13,158 +34,545 @@
         }
 
         html {
-            scroll-behavior: smooth; /* Smooth scrolling for internal links */
+            scroll-behavior: smooth;
+            font-size: 16px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            line-height: 1.6;
-            color: #333;
-            background-color: #f8f9fa; /* Light grey background */
+            font-family: var(--font-main);
+            line-height: 1.7;
+            color: var(--dark);
+            background-color: var(--light);
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Ensure footer stays at bottom */
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+        }
+        
+        /* --- Typography --- */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            margin-bottom: 1.5rem;
+            color: #495057;
+        }
+        
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        a:hover {
+            color: var(--primary-dark);
         }
 
         /* --- Container --- */
         .container {
             width: 90%;
-            max-width: 1100px; /* Max width for larger screens */
-            margin: 0 auto; /* Center the container */
-            padding: 20px 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
         }
 
         /* --- Header --- */
         header {
-            background: #343a40; /* Dark background */
-            color: #ffffff;
-            padding: 1.5rem 0;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 3rem 0 5rem;
+            position: relative;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            box-shadow: var(--shadow-md);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"%3E%3Cpath fill="%23ffffff" fill-opacity="0.05" d="M0,128L48,144C96,160,192,192,288,176C384,160,480,96,576,90.7C672,85,768,139,864,154.7C960,171,1056,149,1152,133.3C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"%3E%3C/path%3E%3C/svg%3E');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.8;
+            z-index: 0;
+        }
+
+        header .container {
+            position: relative;
+            z-index: 1;
         }
 
         header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 300; /* Lighter font weight */
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            opacity: 0;
+            animation: fadeInDown 1s ease forwards;
+            animation-delay: 0.2s;
         }
 
         header p {
-            font-size: 1.1rem;
-            color: #adb5bd; /* Lighter text color */
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: 0.4s;
         }
 
-        /* --- Navigation (Simple) --- */
+        /* --- Navigation --- */
+        nav {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-top: -2rem;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            z-index: 10;
+            max-width: 95%;
+            width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+            animation-delay: 0.6s;
+        }
+
         nav ul {
             list-style: none;
-            padding: 1rem 0;
-            text-align: center;
-            background: #e9ecef; /* Light background for nav */
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         nav ul li {
-            display: inline;
-            margin: 0 15px;
+            margin: 0 5px;
         }
 
         nav ul li a {
-            text-decoration: none;
-            color: #007bff; /* Bootstrap blue */
-            font-weight: 500;
-            transition: color 0.3s ease;
+            display: block;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--dark);
+            border-radius: 100px;
+            transition: var(--transition);
         }
 
         nav ul li a:hover {
-            color: #0056b3; /* Darker blue on hover */
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+            transform: translateY(-3px);
+        }
+
+        nav ul li a.active {
+            background: var(--primary);
+            color: white;
         }
 
         /* --- Main Content --- */
         main {
-            flex-grow: 1; /* Allow main content to fill available space */
-            padding: 2rem 0;
+            flex-grow: 1;
+            padding: 3rem 0;
         }
 
         section {
-            margin-bottom: 2.5rem;
-            padding: 2rem;
-            background: #ffffff; /* White background for sections */
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 4rem;
+            padding: 2.5rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        section:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-5px);
+        }
+
+        section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            opacity: 0.7;
         }
 
         section h2 {
-            font-size: 2rem;
-            color: #343a40; /* Dark heading color */
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #007bff; /* Accent border */
-            padding-bottom: 0.5rem;
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            position: relative;
             display: inline-block;
         }
 
+        section h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 50%;
+            height: 4px;
+            border-radius: 2px;
+            background: linear-gradient(to right, var(--primary), transparent);
+        }
+
         /* --- Image Styling --- */
-        img.responsive-img {
-            max-width: 100%;
+        .image-container {
+            overflow: hidden;
+            border-radius: var(--border-radius);
+            margin: 2rem 0;
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        .responsive-img {
+            width: 100%;
             height: auto;
-            border-radius: 8px;
             display: block;
-            margin: 1.5rem auto;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.5s ease;
+        }
+
+        .image-container:hover .responsive-img {
+            transform: scale(1.05);
+        }
+
+        .image-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom right, rgba(67, 97, 238, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        /* --- Feature List --- */
+        .feature-list {
+            list-style: none;
+            padding-left: 0.5rem;
+        }
+
+        .feature-list li {
+            position: relative;
+            padding: 0.7rem 0 0.7rem 2rem;
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .feature-list li:hover {
+            transform: translateX(5px);
+        }
+
+        .feature-list li::before {
+            content: '\f14a';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            top: 0.7rem;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .feature-list li strong {
+            color: var(--primary-dark);
+            font-weight: 600;
         }
 
         /* --- Button Styling --- */
         .cta-button {
             display: inline-block;
-            background-color: #007bff;
-            color: #ffffff;
-            padding: 12px 25px;
-            text-decoration: none;
-            border-radius: 5px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 100px;
             font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
             border: none;
             cursor: pointer;
-            text-align: center;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            text-transform: uppercase;
             margin-top: 1rem;
         }
 
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s ease;
+            z-index: -1;
+        }
+
         .cta-button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px); /* Slight lift effect */
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button i {
+            margin-right: 0.5rem;
+        }
+
+        /* --- Contact Info --- */
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .contact-item {
+            flex: 1 1 250px;
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            background: rgba(67, 97, 238, 0.05);
+            transition: var(--transition);
+        }
+
+        .contact-item:hover {
+            background: rgba(67, 97, 238, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .contact-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .contact-text h4 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+            color: var(--primary-dark);
+        }
+
+        .contact-text p {
+            font-size: 0.9rem;
+            margin-bottom: 0;
         }
 
         /* --- Footer --- */
         footer {
-            background: #343a40;
-            color: #adb5bd;
-            text-align: center;
-            padding: 1.5rem 0;
-            margin-top: auto; /* Pushes footer to bottom */
+            background: var(--dark);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 3rem 0 2rem;
+            position: relative;
+            margin-top: 4rem;
         }
 
-        footer p {
-            margin: 0;
+        footer::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-image: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"%3E%3Cpath fill="%23212529" d="M0,96L60,112C120,128,240,160,360,186.7C480,213,600,235,720,224C840,213,960,171,1080,144C1200,117,1320,107,1380,101.3L1440,96L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"%3E%3C/path%3E%3C/svg%3E');
+            background-size: cover;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-logo h3 {
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-logo p {
+            font-size: 0.95rem;
+            max-width: 250px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .footer-links h4 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .footer-links h4::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 0.9rem;
         }
 
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* --- Responsive Design --- */
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
+            html {
+                font-size: 15px;
+            }
             header h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
+        }
 
-            section h2 {
-                font-size: 1.75rem;
+        @media (max-width: 768px) {
+            header {
+                padding: 2.5rem 0 4rem;
             }
-
+            header h1 {
+                font-size: 2.2rem;
+            }
+            nav {
+                padding: 0.75rem;
+            }
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
             nav ul li {
-                display: block; /* Stack nav items */
-                margin: 10px 0;
+                width: 100%;
+                margin: 3px 0;
+                text-align: center;
             }
-
-            .container {
-                width: 95%;
+            nav ul li a {
+                padding: 0.5rem 1rem;
+            }
+            section {
+                padding: 1.75rem;
+            }
+            section h2 {
+                font-size: 1.8rem;
+            }
+            .footer-content > div {
+                flex: 1 1 100%;
             }
         }
 
@@ -172,16 +580,22 @@
             header h1 {
                 font-size: 1.8rem;
             }
-             header p {
-                font-size: 1rem;
+            header p {
+                font-size: 1.1rem;
             }
-             section h2 {
-                font-size: 1.5rem;
+            nav {
+                margin-top: -1.5rem;
+            }
+            section h2 {
+                font-size: 1.6rem;
             }
             .cta-button {
-                padding: 10px 20px;
-                font-size: 0.9rem;
-                width: 100%; /* Make button full width */
+                width: 100%;
+                text-align: center;
+                padding: 0.9rem 1.5rem;
+            }
+            .contact-info {
+                gap: 1rem;
             }
         }
     </style>
@@ -191,56 +605,173 @@
     <header>
         <div class="container">
             <h1>My Awesome Project</h1>
-            <p>A simple, elegant, single-page website example.</p>
+            <p>Creating stunning experiences with elegant design and modern technology.</p>
         </div>
     </header>
 
-    <nav>
+    <nav class="container">
         <ul>
-            <li><a href="#about">About</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#about" class="active"><i class="fas fa-info-circle"></i> About</a></li>
+            <li><a href="#features"><i class="fas fa-star"></i> Features</a></li>
+            <li><a href="#contact"><i class="fas fa-envelope"></i> Contact</a></li>
         </ul>
     </nav>
 
     <main class="container">
-        <section id="about">
+        <section id="about" class="fade-in">
             <h2>About Us</h2>
-            <p>Welcome to this demonstration page! This entire website exists within a single HTML file, leveraging embedded CSS for styling. It's designed to be clean, responsive, and easy to understand.</p>
-            <img src="https://via.placeholder.com/600x300.png?text=Placeholder+Image" alt="Placeholder Image" class="responsive-img">
-            <p>We aim to showcase how much can be achieved with just HTML and CSS, perfect for simple portfolio pages, project landing pages, or quick prototypes.</p>
+            <p>Welcome to this beautifully crafted demonstration page! We've created this stunning single-page website to showcase the power of modern HTML and CSS. With thoughtful design principles and attention to detail, we've built an experience that's both visually appealing and highly functional.</p>
+            
+            <div class="image-container">
+                <img src="/api/placeholder/800/400" alt="Project Showcase" class="responsive-img">
+            </div>
+            
+            <p>Our mission is to demonstrate how clean code and thoughtful design can create remarkable user experiences. This single HTML file contains everything needed for a professional-looking website, making it perfect for portfolios, landing pages, or project showcases.</p>
+            
+            <a href="#features" class="cta-button"><i class="fas fa-chevron-right"></i> Explore Features</a>
         </section>
 
-        <section id="features">
-            <h2>Features</h2>
-            <ul>
-                <li><strong>Single File:</strong> All HTML, CSS, and basic JS in one place.</li>
-                <li><strong>Responsive Design:</strong> Adapts beautifully to desktop, tablet, and mobile screens.</li>
-                <li><strong>Clean Code:</strong> Well-commented CSS for easy modification.</li>
-                <li><strong>Modern Look:</strong> Uses a simple, contemporary color scheme and layout.</li>
-                <li><strong>Smooth Scrolling:</strong> Uses `scroll-behavior: smooth` for internal links.</li>
+        <section id="features" class="fade-in">
+            <h2>Amazing Features</h2>
+            <p>We've packed this template with modern design elements and useful features that make it stand out from typical single-page websites. Here's what makes it special:</p>
+            
+            <ul class="feature-list">
+                <li><strong>Elegant Design:</strong> Clean aesthetics with attention to typography, spacing, and visual hierarchy.</li>
+                <li><strong>Smooth Animations:</strong> Subtle transitions and effects that enhance the user experience without being distracting.</li>
+                <li><strong>Fully Responsive:</strong> Looks beautiful on desktops, tablets, and mobile devices with no compromises.</li>
+                <li><strong>Modern Gradients:</strong> Stylish color transitions that add depth and visual interest.</li>
+                <li><strong>Optimized Performance:</strong> Lightweight code that loads quickly and runs smoothly.</li>
+                <li><strong>Interactive Elements:</strong> Hover effects and visual feedback that make the site feel alive.</li>
+                <li><strong>Accessibility:</strong> Designed with best practices for all users in mind.</li>
             </ul>
-            <a href="#" class="cta-button">Learn More (Example Button)</a>
+            
+            <a href="#contact" class="cta-button"><i class="fas fa-paper-plane"></i> Get Started Today</a>
         </section>
 
-        <section id="contact">
+        <section id="contact" class="fade-in">
             <h2>Get In Touch</h2>
-            <p>This is a static example, so there's no functional contact form. However, you could easily add your email address or links to your social media profiles here.</p>
-            <p>For example: Reach out via <a href="mailto:email@example.com">email@example.com</a>.</p>
-            <a href="mailto:email@example.com" class="cta-button">Send Us an Email</a>
+            <p>We'd love to hear from you! While this is a static demonstration, here's how you would typically reach out to us:</p>
+            
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="contact-text">
+                        <h4>Email Us</h4>
+                        <p>contact@example.com</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="contact-text">
+                        <h4>Call Us</h4>
+                        <p>+1 (555) 123-4567</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="contact-text">
+                        <h4>Visit Us</h4>
+                        <p>123 Web Street, Digital City</p>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="mailto:contact@example.com" class="cta-button"><i class="fas fa-envelope"></i> Send Us an Email</a>
         </section>
     </main>
 
     <footer>
         <div class="container">
-            <p id="copyright">© Placeholder Year. Your Website Name. All rights reserved.</p>
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>My Awesome Project</h3>
+                    <p>Creating beautiful web experiences with clean, efficient code and modern design principles.</p>
+                    
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Support Center</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p id="copyright">© 2025. My Awesome Project. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
     <script>
-        // Simple script to update the copyright year automatically
-        const currentYear = new Date().getFullYear();
-        document.getElementById('copyright').textContent = `© ${currentYear}. Your Website Name. All rights reserved.`;
+        // Update copyright year automatically
+        document.getElementById('copyright').textContent = `© ${new Date().getFullYear()}. My Awesome Project. All rights reserved.`;
+        
+        // Fade-in animation for sections as they scroll into view
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.fade-in').forEach(section => {
+                observer.observe(section);
+            });
+            
+            // Add active class to navigation links when scrolling
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('nav ul li a');
+            
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
     </script>
 
 </body>
