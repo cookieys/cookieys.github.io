@@ -3,126 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Single File 3D Renderer</title>
+    <title>Single File 3D Stress Test</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevent scrollbars */
-            background-color: #111; /* Dark background */
+            overflow: hidden;
+            background-color: #000;
             color: #eee;
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Align title to top */
+            flex-direction: column; /* Stack controls on top */
+            align-items: center;
         }
 
-        #renderCanvas {
-            display: block; /* Necessary for Three.js renderer */
+        #renderCanvasContainer {
+            width: 100%;
+            height: calc(100vh - 70px); /* Adjust height to leave space for controls */
+            position: relative;
         }
 
-        .info-text {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            background-color: rgba(0,0,0,0.5);
-            border-radius: 5px;
+        .controls {
+            padding: 10px;
+            background-color: rgba(30, 30, 50, 0.8);
+            border-bottom: 1px solid #444;
+            width: 100%;
+            box-sizing: border-box;
             text-align: center;
             z-index: 10;
+        }
+
+        .controls label, .controls input, .controls button {
+            margin: 0 5px;
+            padding: 5px;
+            font-size: 14px;
+        }
+        .controls input {
+            width: 80px;
+        }
+
+        #fpsDisplay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.6);
+            color: #0f0;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            z-index: 100;
         }
     </style>
 </head>
 <body>
-    <div class="info-text">
-        <h1>Simple 3D Cube</h1>
-        <p>Using Three.js in a single HTML file</p>
+    <div class="controls">
+        <label for="numObjects">Number of Cubes:</label>
+        <input type="number" id="numObjects" value="500" min="1" max="50000">
+        <label for="spreadFactor">Spread Factor:</label>
+        <input type="number" id="spreadFactor" value="50" min="1" max="200">
+        <button id="startButton">Start/Restart Test</button>
+        <div id="objectCountDisplay" style="display: inline-block; margin-left: 15px;">Objects: 0</div>
+    </div>
+
+    <div id="renderCanvasContainer">
+        <div id="fpsDisplay">FPS: --</div>
+        <!-- Canvas will be appended here by Three.js -->
     </div>
 
     <!-- Three.js library from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        // Wait for the DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            let scene, camera, renderer, cube;
+        let scene, camera, renderer;
+        let cubes = [];
+        let animationFrameId;
 
-            function init() {
-                // 1. Scene
-                scene = new THREE.Scene();
-                scene.background = new THREE.Color(0x222233); // Dark blueish background for the scene
+        // FPS calculation
+        let lastTime = performance.now();
+        let frameCount = 0;
+        const fpsDisplay = document.getElementById('fpsDisplay');
+        const objectCountDisplay = document.getElementById('objectCountDisplay');
 
-                // 2. Camera
-                const fov = 75; // Field of View
-                const aspect = window.innerWidth / window.innerHeight; // Aspect Ratio
-                const near = 0.1; // Near clipping plane
-                const far = 1000; // Far clipping plane
-                camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-                camera.position.z = 5; // Move camera back a bit
+        const numObjectsInput = document.getElementById('numObjects');
+        const spreadFactorInput = document.getElementById('spreadFactor');
+        const startButton = document.getElementById('startButton');
+        const canvasContainer = document.getElementById('renderCanvasContainer');
 
-                // 3. Renderer
-                renderer = new THREE.WebGLRenderer({ antialias: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.domElement.id = 'renderCanvas'; // Assign an ID for potential CSS targeting
-                document.body.appendChild(renderer.domElement); // Add canvas to the body
+        function init() {
+            // 0. Clean up previous scene if any
+            if (renderer) {
+                renderer.dispose();
+                canvasContainer.removeChild(renderer.domElement);
+            }
+            cubes.forEach(cube => {
+                if (cube.geometry) cube.geometry.dispose();
+                if (cube.material) cube.material.dispose();
+            });
+            cubes = [];
+            if (scene) {
+                while(scene.children.length > 0){
+                    scene.remove(scene.children[0]);
+                }
+            }
 
-                // 4. Geometry (the shape)
-                const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5); // Width, Height, Depth
 
-                // 5. Material (the appearance)
-                // MeshBasicMaterial doesn't react to light
-                // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+            // 1. Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x101018);
 
-                // MeshStandardMaterial reacts to light, looks more "3D"
+            // 2. Camera
+            const fov = 75;
+            const aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
+            const near = 0.1;
+            const far = 1000;
+            camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            camera.position.z = parseInt(spreadFactorInput.value) / 3; // Adjust camera based on spread
+
+            // 3. Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+            canvasContainer.appendChild(renderer.domElement);
+
+            // 4. Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            // 5. Create Objects
+            const numObjects = parseInt(numObjectsInput.value);
+            const spread = parseInt(spreadFactorInput.value);
+            objectCountDisplay.textContent = `Objects: ${numObjects}`;
+
+            const geometry = new THREE.BoxGeometry(1, 1, 1); // Re-use geometry
+
+            for (let i = 0; i < numObjects; i++) {
                 const material = new THREE.MeshStandardMaterial({
-                    color: 0x0099ff, // A nice blue
-                    roughness: 0.5,   // How rough the surface is (0=shiny, 1=dull)
-                    metalness: 0.3    // How metallic it looks (0=non-metallic, 1=fully metallic)
+                    color: new THREE.Color(Math.random(), Math.random(), Math.random()),
+                    roughness: 0.3 + Math.random() * 0.6,
+                    metalness: Math.random() * 0.5
                 });
 
-                // 6. Mesh (Geometry + Material)
-                cube = new THREE.Mesh(geometry, material);
-                scene.add(cube); // Add cube to the scene
+                const cube = new THREE.Mesh(geometry, material);
 
-                // 7. Lights (important for MeshStandardMaterial)
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
-                scene.add(ambientLight);
+                cube.position.set(
+                    (Math.random() - 0.5) * spread,
+                    (Math.random() - 0.5) * spread,
+                    (Math.random() - 0.5) * spread
+                );
 
-                const pointLight = new THREE.PointLight(0xffffff, 0.8); // Brighter light from a point
-                pointLight.position.set(5, 5, 5); // Position the light
-                scene.add(pointLight);
+                cube.rotation.set(
+                    Math.random() * Math.PI * 2,
+                    Math.random() * Math.PI * 2,
+                    Math.random() * Math.PI * 2
+                );
 
-                // Handle window resize
-                window.addEventListener('resize', onWindowResize, false);
+                // Store random rotation speeds for more varied animation
+                cube.userData.rotationSpeed = {
+                    x: (Math.random() - 0.5) * 0.02,
+                    y: (Math.random() - 0.5) * 0.02,
+                    z: (Math.random() - 0.5) * 0.02
+                };
 
-                // Start animation loop
-                animate();
+                cubes.push(cube);
+                scene.add(cube);
             }
 
-            function onWindowResize() {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize, false);
+            onWindowResize(); // Call once to set initial size
+
+            // Start animation loop
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            animate();
+        }
+
+        function onWindowResize() {
+            if (!camera || !renderer) return;
+            camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+        }
+
+        function animate() {
+            animationFrameId = requestAnimationFrame(animate);
+
+            const now = performance.now();
+            const delta = (now - lastTime) / 1000; // time in seconds
+            lastTime = now;
+            frameCount++;
+
+            if (delta >= 1.0) { // Update FPS display every second
+                const fps = Math.round(frameCount / delta);
+                fpsDisplay.textContent = `FPS: ${fps}`;
+                frameCount = 0;
+                lastTime = performance.now(); // Reset timer more accurately
             }
 
-            function animate() {
-                requestAnimationFrame(animate); // Request next frame
 
-                // Rotate the cube
-                if (cube) {
-                    cube.rotation.x += 0.005;
-                    cube.rotation.y += 0.008;
-                    cube.rotation.z += 0.003;
-                }
+            cubes.forEach(cube => {
+                cube.rotation.x += cube.userData.rotationSpeed.x;
+                cube.rotation.y += cube.userData.rotationSpeed.y;
+                cube.rotation.z += cube.userData.rotationSpeed.z;
+            });
 
-                // Render the scene from the camera's perspective
-                renderer.render(scene, camera);
-            }
+            renderer.render(scene, camera);
+        }
 
-            // Initialize and start everything
-            init();
+        // Event Listener for the start button
+        startButton.addEventListener('click', init);
+
+        // Initial call to set up the scene when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+             // Don't auto-start, wait for button click
+             // init();
+             // Set initial camera for placeholder view if needed, or just leave blank until button press
+            camera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
+            camera.position.z = 5; // A default
+            renderer = new THREE.WebGLRenderer(); // Placeholder renderer
+            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+            canvasContainer.appendChild(renderer.domElement);
+            renderer.setClearColor(0x101018);
+            renderer.render(new THREE.Scene(), camera); // Render empty scene
         });
+
     </script>
 </body>
 </html>
