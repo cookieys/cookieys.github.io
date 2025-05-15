@@ -3,38 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Comment Remover</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Single File 3D Renderer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars */
+            background-color: #111; /* Dark background */
+            color: #eee;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align title to top */
+        }
+
+        #renderCanvas {
+            display: block; /* Necessary for Three.js renderer */
+        }
+
+        .info-text {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 5px;
+            text-align: center;
+            z-index: 10;
+        }
+    </style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>Code Comment Remover</h1>
-        <p class="info">
-            Paste your code below. Supports common comment types like
-            <code>//...</code>, <code>#...</code>, <code>/*...*/</code>, <code><!--...--></code>,
-            <code>--...</code>, <code>;...</code> etc.
-            <br>
-            <strong>Limitation:</strong> May incorrectly remove comment-like syntax inside strings.
-        </p>
-
-        <div class="editor-area">
-            <div class="editor-pane">
-                <label for="inputCode">Input Code:</label>
-                <textarea id="inputCode" placeholder="Paste your code with comments here..."></textarea>
-            </div>
-
-            <div class="editor-pane">
-                <label for="outputCode">Output Code (Comments Removed):</label>
-                <textarea id="outputCode" readonly placeholder="Result will appear here..."></textarea>
-            </div>
-        </div>
-
-        <button id="removeButton">Remove Comments</button>
-         <button id="copyButton" title="Copy Output to Clipboard">Copy Output</button>
-
+    <div class="info-text">
+        <h1>Simple 3D Cube</h1>
+        <p>Using Three.js in a single HTML file</p>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Three.js library from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Wait for the DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            let scene, camera, renderer, cube;
+
+            function init() {
+                // 1. Scene
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x222233); // Dark blueish background for the scene
+
+                // 2. Camera
+                const fov = 75; // Field of View
+                const aspect = window.innerWidth / window.innerHeight; // Aspect Ratio
+                const near = 0.1; // Near clipping plane
+                const far = 1000; // Far clipping plane
+                camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+                camera.position.z = 5; // Move camera back a bit
+
+                // 3. Renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.domElement.id = 'renderCanvas'; // Assign an ID for potential CSS targeting
+                document.body.appendChild(renderer.domElement); // Add canvas to the body
+
+                // 4. Geometry (the shape)
+                const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5); // Width, Height, Depth
+
+                // 5. Material (the appearance)
+                // MeshBasicMaterial doesn't react to light
+                // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+                // MeshStandardMaterial reacts to light, looks more "3D"
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x0099ff, // A nice blue
+                    roughness: 0.5,   // How rough the surface is (0=shiny, 1=dull)
+                    metalness: 0.3    // How metallic it looks (0=non-metallic, 1=fully metallic)
+                });
+
+                // 6. Mesh (Geometry + Material)
+                cube = new THREE.Mesh(geometry, material);
+                scene.add(cube); // Add cube to the scene
+
+                // 7. Lights (important for MeshStandardMaterial)
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
+                scene.add(ambientLight);
+
+                const pointLight = new THREE.PointLight(0xffffff, 0.8); // Brighter light from a point
+                pointLight.position.set(5, 5, 5); // Position the light
+                scene.add(pointLight);
+
+                // Handle window resize
+                window.addEventListener('resize', onWindowResize, false);
+
+                // Start animation loop
+                animate();
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate); // Request next frame
+
+                // Rotate the cube
+                if (cube) {
+                    cube.rotation.x += 0.005;
+                    cube.rotation.y += 0.008;
+                    cube.rotation.z += 0.003;
+                }
+
+                // Render the scene from the camera's perspective
+                renderer.render(scene, camera);
+            }
+
+            // Initialize and start everything
+            init();
+        });
+    </script>
 </body>
 </html>
