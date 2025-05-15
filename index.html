@@ -3,66 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Single File 3D Stress Test</title>
+    <title>Single File 3D Stress Test - Separated</title>
+
+    <!-- CSS Section -->
     <style>
         body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow: hidden; /* Prevent scrollbars on body */
             background-color: #000;
             color: #eee;
             font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column; /* Stack controls on top */
+            flex-direction: column; /* Stack controls on top of canvas container */
             align-items: center;
-        }
-
-        #renderCanvasContainer {
-            width: 100%;
-            height: calc(100vh - 70px); /* Adjust height to leave space for controls */
-            position: relative;
+            height: 100vh; /* Ensure body takes full viewport height */
         }
 
         .controls {
             padding: 10px;
-            background-color: rgba(30, 30, 50, 0.8);
+            background-color: rgba(30, 30, 50, 0.85);
             border-bottom: 1px solid #444;
             width: 100%;
             box-sizing: border-box;
             text-align: center;
             z-index: 10;
+            flex-shrink: 0; /* Prevent controls from shrinking */
         }
 
         .controls label, .controls input, .controls button {
             margin: 0 5px;
-            padding: 5px;
+            padding: 5px 8px;
             font-size: 14px;
+            border-radius: 3px;
+            border: 1px solid #555;
         }
         .controls input {
-            width: 80px;
+            width: 70px;
+            background-color: #333;
+            color: #eee;
+        }
+        .controls button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background-color: #45a049;
+        }
+
+        #renderCanvasContainer {
+            width: 100%;
+            flex-grow: 1; /* Allow canvas container to fill remaining space */
+            position: relative; /* For positioning FPS display */
+            min-height: 200px; /* Ensure it has some height even if body height is not perfect */
         }
 
         #fpsDisplay {
             position: absolute;
             top: 10px;
             right: 10px;
-            background-color: rgba(0,0,0,0.6);
-            color: #0f0;
-            padding: 5px 10px;
+            background-color: rgba(0,0,0,0.7);
+            color: #0f0; /* Green for FPS */
+            padding: 6px 12px;
             border-radius: 3px;
             font-family: monospace;
-            z-index: 100;
+            font-size: 14px;
+            z-index: 100; /* Above canvas */
+        }
+
+        #objectCountDisplay {
+            display: inline-block;
+            margin-left: 15px;
+            color: #ccc;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
+    <!-- HTML Structure Section -->
     <div class="controls">
-        <label for="numObjects">Number of Cubes:</label>
-        <input type="number" id="numObjects" value="500" min="1" max="50000">
-        <label for="spreadFactor">Spread Factor:</label>
-        <input type="number" id="spreadFactor" value="50" min="1" max="200">
-        <button id="startButton">Start/Restart Test</button>
-        <div id="objectCountDisplay" style="display: inline-block; margin-left: 15px;">Objects: 0</div>
+        <label for="numObjects">Cubes:</label>
+        <input type="number" id="numObjects" value="500" min="1" max="50000" step="100">
+        <label for="spreadFactor">Spread:</label>
+        <input type="number" id="spreadFactor" value="50" min="1" max="300" step="10">
+        <button id="startButton">Start / Restart Test</button>
+        <div id="objectCountDisplay">Objects: 0</div>
     </div>
 
     <div id="renderCanvasContainer">
@@ -70,166 +96,242 @@
         <!-- Canvas will be appended here by Three.js -->
     </div>
 
+    <!-- JavaScript Section -->
     <!-- Three.js library from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
+        // --- Global Variables ---
         let scene, camera, renderer;
-        let cubes = [];
-        let animationFrameId;
+        let cubes = []; // Array to hold our cube meshes
+        let animationFrameId; // To control the animation loop
 
-        // FPS calculation
-        let lastTime = performance.now();
+        // FPS calculation variables
+        let lastTimeForFPS; // Renamed for clarity, stores time of last FPS update
         let frameCount = 0;
+
+        // DOM element references (cached for performance)
         const fpsDisplay = document.getElementById('fpsDisplay');
         const objectCountDisplay = document.getElementById('objectCountDisplay');
-
         const numObjectsInput = document.getElementById('numObjects');
         const spreadFactorInput = document.getElementById('spreadFactor');
         const startButton = document.getElementById('startButton');
         const canvasContainer = document.getElementById('renderCanvasContainer');
 
-        function init() {
-            // 0. Clean up previous scene if any
-            if (renderer) {
-                renderer.dispose();
+        // --- Initial Setup (runs once when DOM is ready) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup button listener to start/restart the test
+            startButton.addEventListener('click', runTest);
+
+            // Setup resize listener once for the window
+            window.addEventListener('resize', onWindowResize, false);
+
+            // Display an initial placeholder scene to show something is working
+            setupPlaceholderScene();
+        });
+
+        // --- Main Test Logic ---
+        function runTest() {
+            // This function is called by the "Start/Restart" button.
+            // It initializes or re-initializes the 3D scene for the stress test.
+            initializeThreeJSScene();
+        }
+
+        function initializeThreeJSScene() {
+            // 0. Stop any ongoing animation and clean up previous Three.js resources
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            // Remove old canvas if it exists and is a child of the container
+            if (renderer && renderer.domElement && renderer.domElement.parentNode === canvasContainer) {
                 canvasContainer.removeChild(renderer.domElement);
             }
-            cubes.forEach(cube => {
-                if (cube.geometry) cube.geometry.dispose();
-                if (cube.material) cube.material.dispose();
-            });
-            cubes = [];
-            if (scene) {
-                while(scene.children.length > 0){
-                    scene.remove(scene.children[0]);
-                }
+            // Dispose of old WebGL renderer resources to free up GPU memory
+            if (renderer) {
+                renderer.dispose();
             }
 
+            // Dispose of old scene objects and their geometries/materials
+            if (scene) {
+                while (scene.children.length > 0) {
+                    const object = scene.children[0];
+                    scene.remove(object);
+                    if (object.geometry) object.geometry.dispose();
+                    if (object.material) {
+                        if (Array.isArray(object.material)) {
+                            object.material.forEach(material => material.dispose());
+                        } else {
+                            object.material.dispose();
+                        }
+                    }
+                    // If you add textures, dispose them here:
+                    // if (object.material && object.material.map) object.material.map.dispose();
+                }
+            }
+            cubes = []; // Clear our local array of cube references
 
-            // 1. Scene
+            // 1. Create a new Scene
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x101018);
+            scene.background = new THREE.Color(0x101018); // Dark space-like background
 
-            // 2. Camera
-            const fov = 75;
+            // 2. Create a new Camera
+            const fov = 75; // Field of View
             const aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
-            const near = 0.1;
-            const far = 1000;
+            const near = 0.1; // Near clipping plane
+            const far = 1500; // Far clipping plane (increased for larger spreads)
             camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-            camera.position.z = parseInt(spreadFactorInput.value) / 3; // Adjust camera based on spread
 
-            // 3. Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            const currentSpread = parseInt(spreadFactorInput.value);
+            // Position camera based on spread, ensuring it's far enough to see objects
+            camera.position.z = Math.max(30, currentSpread * 0.6) + 20; // Adjusted Z for better view
+            camera.position.y = currentSpread * 0.2; // Slightly elevated view
+            camera.lookAt(scene.position); // Point camera towards the center of the scene
+
+            // 3. Create a new WebGL Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true }); // Antialias for smoother edges (can be turned off for more performance)
             renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-            canvasContainer.appendChild(renderer.domElement);
+            canvasContainer.appendChild(renderer.domElement); // Add the renderer's canvas to our container
 
-            // 4. Lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            // 4. Add Lights to the Scene
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft ambient light for overall illumination
             scene.add(ambientLight);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 10, 7.5);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Brighter directional light for highlights and shadows
+            directionalLight.position.set(0.5, 1, 0.75).normalize(); // Position light coming from an angle
             scene.add(directionalLight);
 
-            // 5. Create Objects
+            // 5. Create and Add 3D Objects (Cubes) to the Scene
             const numObjects = parseInt(numObjectsInput.value);
-            const spread = parseInt(spreadFactorInput.value);
-            objectCountDisplay.textContent = `Objects: ${numObjects}`;
+            if (objectCountDisplay) objectCountDisplay.textContent = `Objects: ${numObjects}`;
 
-            const geometry = new THREE.BoxGeometry(1, 1, 1); // Re-use geometry
+            // Optimization: Create one geometry instance and reuse it for all cubes.
+            // Materials will be unique per cube if colors/properties differ.
+            const cubeGeometry = new THREE.BoxGeometry(1, 1, 1); // Standard 1x1x1 cube
 
             for (let i = 0; i < numObjects; i++) {
                 const material = new THREE.MeshStandardMaterial({
-                    color: new THREE.Color(Math.random(), Math.random(), Math.random()),
-                    roughness: 0.3 + Math.random() * 0.6,
-                    metalness: Math.random() * 0.5
+                    color: new THREE.Color(Math.random() * 0.7 + 0.3, Math.random() * 0.7 + 0.3, Math.random() * 0.7 + 0.3), // Avoid very dark colors
+                    roughness: 0.3 + Math.random() * 0.6, // Random roughness
+                    metalness: Math.random() * 0.5      // Random metalness (0 to 0.5)
                 });
 
-                const cube = new THREE.Mesh(geometry, material);
+                const cube = new THREE.Mesh(cubeGeometry, material);
 
+                // Position cubes randomly within the specified spread
                 cube.position.set(
-                    (Math.random() - 0.5) * spread,
-                    (Math.random() - 0.5) * spread,
-                    (Math.random() - 0.5) * spread
+                    (Math.random() - 0.5) * currentSpread,
+                    (Math.random() - 0.5) * currentSpread,
+                    (Math.random() - 0.5) * currentSpread
                 );
 
+                // Rotate cubes randomly
                 cube.rotation.set(
                     Math.random() * Math.PI * 2,
                     Math.random() * Math.PI * 2,
                     Math.random() * Math.PI * 2
                 );
 
-                // Store random rotation speeds for more varied animation
+                // Store random rotation speeds on the cube object for varied animation
                 cube.userData.rotationSpeed = {
-                    x: (Math.random() - 0.5) * 0.02,
-                    y: (Math.random() - 0.5) * 0.02,
-                    z: (Math.random() - 0.5) * 0.02
+                    x: (Math.random() - 0.5) * 0.025, // Max rotation speed per frame
+                    y: (Math.random() - 0.5) * 0.025,
+                    z: (Math.random() - 0.5) * 0.025
                 };
 
                 cubes.push(cube);
                 scene.add(cube);
             }
 
-            // Handle window resize
-            window.addEventListener('resize', onWindowResize, false);
-            onWindowResize(); // Call once to set initial size
+            // --- FPS Counter Reset for the new test ---
+            lastTimeForFPS = performance.now(); // IMPORTANT: Reset timer for FPS calculation
+            frameCount = 0;
+            if (fpsDisplay) fpsDisplay.textContent = 'FPS: --'; // Reset visual display
 
-            // Start animation loop
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
+            // Ensure renderer and camera are correctly sized for the new scene
+            onWindowResize();
+
+            // Start the animation loop
             animate();
         }
 
-        function onWindowResize() {
-            if (!camera || !renderer) return;
-            camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-        }
-
+        // --- Animation and Rendering Loop ---
         function animate() {
-            animationFrameId = requestAnimationFrame(animate);
+            animationFrameId = requestAnimationFrame(animate); // Request the next frame
 
             const now = performance.now();
-            const delta = (now - lastTime) / 1000; // time in seconds
-            lastTime = now;
             frameCount++;
 
-            if (delta >= 1.0) { // Update FPS display every second
-                const fps = Math.round(frameCount / delta);
-                fpsDisplay.textContent = `FPS: ${fps}`;
-                frameCount = 0;
-                lastTime = performance.now(); // Reset timer more accurately
+            // FPS Calculation: Update display approximately every second
+            if (lastTimeForFPS) { // Ensure lastTimeForFPS is initialized
+                const delta = (now - lastTimeForFPS) / 1000; // Time elapsed since last FPS update (in seconds)
+
+                if (delta >= 1.0) { // If one second or more has passed
+                    const fps = Math.round(frameCount / delta); // Calculate FPS
+                    if (fpsDisplay) fpsDisplay.textContent = `FPS: ${fps}`;
+                    frameCount = 0; // Reset frame counter for the next interval
+                    lastTimeForFPS = now; // Reset the timer for the next interval
+                }
+            } else {
+                lastTimeForFPS = now; // Initialize lastTimeForFPS on the very first frame
             }
 
-
+            // Animate each cube
             cubes.forEach(cube => {
                 cube.rotation.x += cube.userData.rotationSpeed.x;
                 cube.rotation.y += cube.userData.rotationSpeed.y;
                 cube.rotation.z += cube.userData.rotationSpeed.z;
             });
 
-            renderer.render(scene, camera);
+            // Render the scene from the camera's perspective
+            if (renderer && scene && camera) { // Ensure all essential components are ready
+                renderer.render(scene, camera);
+            }
         }
 
-        // Event Listener for the start button
-        startButton.addEventListener('click', init);
+        // --- Utility and Event Handlers ---
+        function onWindowResize() {
+            // This function is called when the browser window is resized.
+            // It updates the camera's aspect ratio and the renderer's size.
+            if (camera && renderer && renderer.domElement && canvasContainer.clientWidth > 0 && canvasContainer.clientHeight > 0) {
+                const newWidth = canvasContainer.clientWidth;
+                const newHeight = canvasContainer.clientHeight;
 
-        // Initial call to set up the scene when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-             // Don't auto-start, wait for button click
-             // init();
-             // Set initial camera for placeholder view if needed, or just leave blank until button press
-            camera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
-            camera.position.z = 5; // A default
-            renderer = new THREE.WebGLRenderer(); // Placeholder renderer
-            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-            canvasContainer.appendChild(renderer.domElement);
-            renderer.setClearColor(0x101018);
-            renderer.render(new THREE.Scene(), camera); // Render empty scene
-        });
+                camera.aspect = newWidth / newHeight;
+                camera.updateProjectionMatrix(); // Apply aspect ratio changes
+                renderer.setSize(newWidth, newHeight); // Resize the drawing canvas
+            }
+        }
+
+        function setupPlaceholderScene() {
+            // Creates a simple, static scene to show something before the main test starts or if it's cleared.
+            // This uses its own temporary renderer and camera to avoid interfering with the main ones if they exist.
+
+            // If a renderer (placeholder or main) already exists and has a canvas, remove it.
+            if (renderer && renderer.domElement && renderer.domElement.parentNode === canvasContainer) {
+                canvasContainer.removeChild(renderer.domElement);
+                renderer.dispose(); // Dispose its resources
+            }
+
+            const placeholderScene = new THREE.Scene();
+            placeholderScene.background = new THREE.Color(0x101018); // Consistent dark background
+
+            const tempCamera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
+            tempCamera.position.z = 5; // Simple camera position
+
+            const tempRenderer = new THREE.WebGLRenderer(); // Create a new temporary renderer
+            tempRenderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+            canvasContainer.appendChild(tempRenderer.domElement);
+            tempRenderer.render(placeholderScene, tempCamera);
+
+            // Assign the temporary renderer to the global 'renderer' variable.
+            // This is so that if 'onWindowResize' is called before 'initializeThreeJSScene',
+            // it has a renderer to work with. 'initializeThreeJSScene' will dispose of this
+            // placeholder renderer when it creates the main one.
+            renderer = tempRenderer;
+            camera = tempCamera; // Similarly for camera
+        }
 
     </script>
 </body>
