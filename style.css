@@ -1,1 +1,71 @@
+body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars on body */
+            background-color: #000;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column; /* Stack controls on top of canvas container */
+            align-items: center;
+            height: 100vh; /* Ensure body takes full viewport height */
+        }
 
+        .controls {
+            padding: 10px;
+            background-color: rgba(30, 30, 50, 0.85);
+            border-bottom: 1px solid #444;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            z-index: 10;
+            flex-shrink: 0; /* Prevent controls from shrinking */
+        }
+
+        .controls label, .controls input, .controls button {
+            margin: 0 5px;
+            padding: 5px 8px;
+            font-size: 14px;
+            border-radius: 3px;
+            border: 1px solid #555;
+        }
+        .controls input {
+            width: 70px;
+            background-color: #333;
+            color: #eee;
+        }
+        .controls button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background-color: #45a049;
+        }
+
+        #renderCanvasContainer {
+            width: 100%;
+            flex-grow: 1; /* Allow canvas container to fill remaining space */
+            position: relative; /* For positioning FPS display */
+            min-height: 200px; /* Ensure it has some height even if body height is not perfect */
+        }
+
+        #fpsDisplay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.7);
+            color: #0f0; /* Green for FPS */
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 14px;
+            z-index: 100; /* Above canvas */
+        }
+
+        #objectCountDisplay {
+            display: inline-block;
+            margin-left: 15px;
+            color: #ccc;
+            font-size: 14px;
+        }
