@@ -89,6 +89,8 @@ function initializeThreeJSScene() {
     // 3. Create a new WebGL Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true }); // Antialias for smoother edges (can be turned off for more performance)
     renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: for softer shadows
     canvasContainer.appendChild(renderer.domElement); // Add the renderer's canvas to our container
 
     // 4. Add Lights to the Scene
@@ -97,15 +99,37 @@ function initializeThreeJSScene() {
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Brighter directional light for highlights and shadows
     directionalLight.position.set(0.5, 1, 0.75).normalize(); // Position light coming from an angle
+    directionalLight.castShadow = true;
     scene.add(directionalLight);
 
-    // 5. Create and Add 3D Objects (Cubes) to the Scene
+    // Configure shadow properties
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 500;
+    // Optional frustum adjustment based on spread (can be fine-tuned)
+    // directionalLight.shadow.camera.left = -currentSpread * 0.6;
+    // directionalLight.shadow.camera.right = currentSpread * 0.6;
+    // directionalLight.shadow.camera.top = currentSpread * 0.6;
+    // directionalLight.shadow.camera.bottom = -currentSpread * 0.6;
+
+
+    // Ground plane for receiving shadows
+    const planeGeometry = new THREE.PlaneGeometry(Math.max(500, currentSpread * 2), Math.max(500, currentSpread * 2));
+    const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x808080, side: THREE.DoubleSide });
+    const groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+    groundPlane.receiveShadow = true;
+    groundPlane.rotation.x = -Math.PI / 2;
+    groundPlane.position.y = - (currentSpread / 2) - 1; // Position below lowest possible sphere
+    scene.add(groundPlane);
+
+    // 5. Create and Add 3D Objects (Spheres) to the Scene
     const numObjects = parseInt(numObjectsInput.value);
     if (objectCountDisplay) objectCountDisplay.textContent = `Objects: ${numObjects}`;
 
     // Optimization: Create one geometry instance and reuse it for all cubes.
     // Materials will be unique per cube if colors/properties differ.
-    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1); // Standard 1x1x1 cube
+    const cubeGeometry = new THREE.SphereGeometry(0.5, 16, 8); // Standard 1x1x1 cube
 
     for (let i = 0; i < numObjects; i++) {
         const material = new THREE.MeshStandardMaterial({
@@ -115,6 +139,7 @@ function initializeThreeJSScene() {
         });
 
         const cube = new THREE.Mesh(cubeGeometry, material);
+        cube.castShadow = true;
 
         // Position cubes randomly within the specified spread
         cube.position.set(
