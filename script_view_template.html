@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script View</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+        .pane {
+            width: 50%;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        #raw-script {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        #rendered-output {
+            background-color: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="raw-script" class="pane">
+            <h2>Raw Script</h2>
+            <pre><code>{{SCRIPT_CONTENT}}</code></pre>
+        </div>
+        <div id="rendered-output" class="pane">
+            <h2>Rendered Output</h2>
+            <div id="output"></div>
+        </div>
+    </div>
+    <script>
+        const scriptContent = `{{SCRIPT_CONTENT}}`;
+        document.getElementById('output').innerHTML = scriptContent;
+    </script>
+</body>
+</html>
