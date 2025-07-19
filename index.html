@@ -3,337 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Single File 3D Stress Test - Separated</title>
-
-    <!-- CSS Section -->
+    <title>CodeCraft - Professional Development Solutions</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevent scrollbars on body */
-            background-color: #000;
-            color: #eee;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column; /* Stack controls on top of canvas container */
-            align-items: center;
-            height: 100vh; /* Ensure body takes full viewport height */
-        }
-
-        .controls {
-            padding: 10px;
-            background-color: rgba(30, 30, 50, 0.85);
-            border-bottom: 1px solid #444;
-            width: 100%;
             box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .hero {
             text-align: center;
-            z-index: 10;
-            flex-shrink: 0; /* Prevent controls from shrinking */
+            max-width: 800px;
+            z-index: 2;
+            position: relative;
         }
 
-        .controls label, .controls input, .controls button {
-            margin: 0 5px;
-            padding: 5px 8px;
-            font-size: 14px;
-            border-radius: 3px;
-            border: 1px solid #555;
-        }
-        .controls input {
-            width: 70px;
-            background-color: #333;
-            color: #eee;
-        }
-        .controls button {
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-        .controls button:hover {
-            background-color: #45a049;
-        }
-
-        #renderCanvasContainer {
-            width: 100%;
-            flex-grow: 1; /* Allow canvas container to fill remaining space */
-            position: relative; /* For positioning FPS display */
-            min-height: 200px; /* Ensure it has some height even if body height is not perfect */
-        }
-
-        #fpsDisplay {
+        .hero::before {
+            content: '';
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(0,0,0,0.7);
-            color: #0f0; /* Green for FPS */
-            padding: 6px 12px;
-            border-radius: 3px;
-            font-family: monospace;
-            font-size: 14px;
-            z-index: 100; /* Above canvas */
+            top: -100px;
+            left: -100px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            backdrop-filter: blur(10px);
         }
 
-        #objectCountDisplay {
-            display: inline-block;
-            margin-left: 15px;
-            color: #ccc;
-            font-size: 14px;
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -150px;
+            right: -150px;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite reverse;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: slideUp 1s ease-out;
+        }
+
+        .subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+            animation: slideUp 1s ease-out 0.2s both;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 18px 36px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 1s ease-out 0.4s both;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.4);
+            background: linear-gradient(45deg, #ff5252, #f44336);
+        }
+
+        .cta-button:active {
+            transform: translateY(-1px);
+        }
+
+        .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover .arrow {
+            transform: translateX(4px);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+            animation: slideUp 1s ease-out 0.6s both;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .feature h3 {
+            color: white;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .feature p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: particleFloat 20s linear infinite;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                margin-top: 3rem;
+            }
+            
+            .feature {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- HTML Structure Section -->
-    <div class="controls">
-        <label for="numObjects">Cubes:</label>
-        <input type="number" id="numObjects" value="500" min="1" max="50000" step="100">
-        <label for="spreadFactor">Spread:</label>
-        <input type="number" id="spreadFactor" value="50" min="1" max="300" step="10">
-        <button id="startButton">Start / Restart Test</button>
-        <div id="objectCountDisplay">Objects: 0</div>
-        <a href="script.html" style="color: #4CAF50; text-decoration: none; margin-left: 15px;">Script Editor</a>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="hero">
+            <h1>Welcome to CodeCraft</h1>
+            <p class="subtitle">
+                Unleash the power of modern development with our cutting-edge solutions. 
+                Transform your ideas into reality with professional tools and expert guidance.
+            </p>
+            
+            <a href="/Script" class="cta-button">
+                Explore Scripts
+                <span class="arrow">→</span>
+            </a>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Optimized performance for maximum efficiency</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Secure</h3>
+                    <p>Enterprise-grade security built-in</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Modern</h3>
+                    <p>Latest technologies and best practices</p>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div id="renderCanvasContainer">
-        <div id="fpsDisplay">FPS: --</div>
-        <!-- Canvas will be appended here by Three.js -->
-    </div>
-
-    <!-- JavaScript Section -->
-    <!-- Three.js library from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        // --- Global Variables ---
-        let scene, camera, renderer;
-        let cubes = []; // Array to hold our cube meshes
-        let animationFrameId; // To control the animation loop
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
 
-        // FPS calculation variables
-        let lastTimeForFPS; // Renamed for clarity, stores time of last FPS update
-        let frameCount = 0;
-
-        // DOM element references (cached for performance)
-        const fpsDisplay = document.getElementById('fpsDisplay');
-        const objectCountDisplay = document.getElementById('objectCountDisplay');
-        const numObjectsInput = document.getElementById('numObjects');
-        const spreadFactorInput = document.getElementById('spreadFactor');
-        const startButton = document.getElementById('startButton');
-        const canvasContainer = document.getElementById('renderCanvasContainer');
-
-        // --- Initial Setup (runs once when DOM is ready) ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Setup button listener to start/restart the test
-            startButton.addEventListener('click', runTest);
-
-            // Setup resize listener once for the window
-            window.addEventListener('resize', onWindowResize, false);
-
-            // Display an initial placeholder scene to show something is working
-            setupPlaceholderScene();
+        // Add smooth hover effects
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // Add parallax effect on mouse move
+            document.addEventListener('mousemove', function(e) {
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+                
+                const hero = document.querySelector('.hero');
+                const moveX = (mouseX - 0.5) * 20;
+                const moveY = (mouseY - 0.5) * 20;
+                
+                hero.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            });
         });
 
-        // --- Main Test Logic ---
-        function runTest() {
-            // This function is called by the "Start/Restart" button.
-            // It initializes or re-initializes the 3D scene for the stress test.
-            initializeThreeJSScene();
-        }
-
-        function initializeThreeJSScene() {
-            // 0. Stop any ongoing animation and clean up previous Three.js resources
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
+        // Add click animation
+        document.querySelector('.cta-button').addEventListener('click', function(e) {
+            if (e.target.getAttribute('href') === '/Script') {
+                e.preventDefault();
+                // In a real application, you would navigate to /Script
+                // For demo purposes, we'll show an alert
+                window.location.href = '/Script';
             }
-
-            // Remove old canvas if it exists and is a child of the container
-            if (renderer && renderer.domElement && renderer.domElement.parentNode === canvasContainer) {
-                canvasContainer.removeChild(renderer.domElement);
-            }
-            // Dispose of old WebGL renderer resources to free up GPU memory
-            if (renderer) {
-                renderer.dispose();
-            }
-
-            // Dispose of old scene objects and their geometries/materials
-            if (scene) {
-                while (scene.children.length > 0) {
-                    const object = scene.children[0];
-                    scene.remove(object);
-                    if (object.geometry) object.geometry.dispose();
-                    if (object.material) {
-                        if (Array.isArray(object.material)) {
-                            object.material.forEach(material => material.dispose());
-                        } else {
-                            object.material.dispose();
-                        }
-                    }
-                    // If you add textures, dispose them here:
-                    // if (object.material && object.material.map) object.material.map.dispose();
-                }
-            }
-            cubes = []; // Clear our local array of cube references
-
-            // 1. Create a new Scene
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x101018); // Dark space-like background
-
-            // 2. Create a new Camera
-            const fov = 75; // Field of View
-            const aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
-            const near = 0.1; // Near clipping plane
-            const far = 1500; // Far clipping plane (increased for larger spreads)
-            camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-
-            const currentSpread = parseInt(spreadFactorInput.value);
-            // Position camera based on spread, ensuring it's far enough to see objects
-            camera.position.z = Math.max(30, currentSpread * 0.6) + 20; // Adjusted Z for better view
-            camera.position.y = currentSpread * 0.2; // Slightly elevated view
-            camera.lookAt(scene.position); // Point camera towards the center of the scene
-
-            // 3. Create a new WebGL Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true }); // Antialias for smoother edges (can be turned off for more performance)
-            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-            canvasContainer.appendChild(renderer.domElement); // Add the renderer's canvas to our container
-
-            // 4. Add Lights to the Scene
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft ambient light for overall illumination
-            scene.add(ambientLight);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Brighter directional light for highlights and shadows
-            directionalLight.position.set(0.5, 1, 0.75).normalize(); // Position light coming from an angle
-            scene.add(directionalLight);
-
-            // 5. Create and Add 3D Objects (Cubes) to the Scene
-            const numObjects = parseInt(numObjectsInput.value);
-            if (objectCountDisplay) objectCountDisplay.textContent = `Objects: ${numObjects}`;
-
-            // Optimization: Create one geometry instance and reuse it for all cubes.
-            // Materials will be unique per cube if colors/properties differ.
-            const cubeGeometry = new THREE.BoxGeometry(1, 1, 1); // Standard 1x1x1 cube
-
-            for (let i = 0; i < numObjects; i++) {
-                const material = new THREE.MeshStandardMaterial({
-                    color: new THREE.Color(Math.random() * 0.7 + 0.3, Math.random() * 0.7 + 0.3, Math.random() * 0.7 + 0.3), // Avoid very dark colors
-                    roughness: 0.3 + Math.random() * 0.6, // Random roughness
-                    metalness: Math.random() * 0.5      // Random metalness (0 to 0.5)
-                });
-
-                const cube = new THREE.Mesh(cubeGeometry, material);
-
-                // Position cubes randomly within the specified spread
-                cube.position.set(
-                    (Math.random() - 0.5) * currentSpread,
-                    (Math.random() - 0.5) * currentSpread,
-                    (Math.random() - 0.5) * currentSpread
-                );
-
-                // Rotate cubes randomly
-                cube.rotation.set(
-                    Math.random() * Math.PI * 2,
-                    Math.random() * Math.PI * 2,
-                    Math.random() * Math.PI * 2
-                );
-
-                // Store random rotation speeds on the cube object for varied animation
-                cube.userData.rotationSpeed = {
-                    x: (Math.random() - 0.5) * 0.025, // Max rotation speed per frame
-                    y: (Math.random() - 0.5) * 0.025,
-                    z: (Math.random() - 0.5) * 0.025
-                };
-
-                cubes.push(cube);
-                scene.add(cube);
-            }
-
-            // --- FPS Counter Reset for the new test ---
-            lastTimeForFPS = performance.now(); // IMPORTANT: Reset timer for FPS calculation
-            frameCount = 0;
-            if (fpsDisplay) fpsDisplay.textContent = 'FPS: --'; // Reset visual display
-
-            // Ensure renderer and camera are correctly sized for the new scene
-            onWindowResize();
-
-            // Start the animation loop
-            animate();
-        }
-
-        // --- Animation and Rendering Loop ---
-        function animate() {
-            animationFrameId = requestAnimationFrame(animate); // Request the next frame
-
-            const now = performance.now();
-            frameCount++;
-
-            // FPS Calculation: Update display approximately every second
-            if (lastTimeForFPS) { // Ensure lastTimeForFPS is initialized
-                const delta = (now - lastTimeForFPS) / 1000; // Time elapsed since last FPS update (in seconds)
-
-                if (delta >= 1.0) { // If one second or more has passed
-                    const fps = Math.round(frameCount / delta); // Calculate FPS
-                    if (fpsDisplay) fpsDisplay.textContent = `FPS: ${fps}`;
-                    frameCount = 0; // Reset frame counter for the next interval
-                    lastTimeForFPS = now; // Reset the timer for the next interval
-                }
-            } else {
-                lastTimeForFPS = now; // Initialize lastTimeForFPS on the very first frame
-            }
-
-            // Animate each cube
-            cubes.forEach(cube => {
-                cube.rotation.x += cube.userData.rotationSpeed.x;
-                cube.rotation.y += cube.userData.rotationSpeed.y;
-                cube.rotation.z += cube.userData.rotationSpeed.z;
-            });
-
-            // Render the scene from the camera's perspective
-            if (renderer && scene && camera) { // Ensure all essential components are ready
-                renderer.render(scene, camera);
-            }
-        }
-
-        // --- Utility and Event Handlers ---
-        function onWindowResize() {
-            // This function is called when the browser window is resized.
-            // It updates the camera's aspect ratio and the renderer's size.
-            if (camera && renderer && renderer.domElement && canvasContainer.clientWidth > 0 && canvasContainer.clientHeight > 0) {
-                const newWidth = canvasContainer.clientWidth;
-                const newHeight = canvasContainer.clientHeight;
-
-                camera.aspect = newWidth / newHeight;
-                camera.updateProjectionMatrix(); // Apply aspect ratio changes
-                renderer.setSize(newWidth, newHeight); // Resize the drawing canvas
-            }
-        }
-
-        function setupPlaceholderScene() {
-            // Creates a simple, static scene to show something before the main test starts or if it's cleared.
-            // This uses its own temporary renderer and camera to avoid interfering with the main ones if they exist.
-
-            // If a renderer (placeholder or main) already exists and has a canvas, remove it.
-            if (renderer && renderer.domElement && renderer.domElement.parentNode === canvasContainer) {
-                canvasContainer.removeChild(renderer.domElement);
-                renderer.dispose(); // Dispose its resources
-            }
-
-            const placeholderScene = new THREE.Scene();
-            placeholderScene.background = new THREE.Color(0x101018); // Consistent dark background
-
-            const tempCamera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
-            tempCamera.position.z = 5; // Simple camera position
-
-            const tempRenderer = new THREE.WebGLRenderer(); // Create a new temporary renderer
-            tempRenderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-            canvasContainer.appendChild(tempRenderer.domElement);
-            tempRenderer.render(placeholderScene, tempCamera);
-
-            // Assign the temporary renderer to the global 'renderer' variable.
-            // This is so that if 'onWindowResize' is called before 'initializeThreeJSScene',
-            // it has a renderer to work with. 'initializeThreeJSScene' will dispose of this
-            // placeholder renderer when it creates the main one.
-            renderer = tempRenderer;
-            camera = tempCamera; // Similarly for camera
-        }
-
+        });
     </script>
 </body>
 </html>
