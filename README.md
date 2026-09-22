@@ -1,2 +1,2 @@
 # cookies.github.io
-Just me &amp; you here :)
+Just me & you here :)
