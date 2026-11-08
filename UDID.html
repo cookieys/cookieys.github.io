@@ -1,0 +1,20 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get my UDID</title>
+<body style="font-family:system-ui;max-width:32rem;margin:2rem auto;padding:0 1rem">
+<div id="out"></div>
+<script>
+  // Set WORKER to your Cloudflare Worker URL (no trailing slash).
+  const WORKER = "https://YOURWORKER.YOURNAME.workers.dev";
+  const out = document.getElementById("out");
+  const q = new URLSearchParams(location.search);
+  if (q.has("UDID")) {
+    for (const [k, v] of q) {
+      const p = out.appendChild(document.createElement("p"));
+      p.append(Object.assign(document.createElement("b"), { textContent: k }), document.createElement("br"), v);
+    }
+  } else {
+    out.appendChild(Object.assign(document.createElement("a"), { href: WORKER + "/enroll", textContent: "Get my UDID" }));
+  }
+</script>
