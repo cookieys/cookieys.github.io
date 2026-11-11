@@ -10,6 +10,8 @@
 <meta property="og:description" content="Auto-tracks the latest itzzace/ytkace release. Add to AltStore, SideStore, or Feather.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cookieys.github.io/">
+<meta property="og:image" content="https://raw.githubusercontent.com/itzzace/ytkace/main/icon.png">
+<meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%AA%3C/text%3E%3C/svg%3E">
 
 <style>
@@ -152,6 +154,10 @@
 
   /* ---------- Skeleton / error ---------- */
   .skeleton { opacity: .6; animation: pulse 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton { animation: none; }
+    .btn, .app, .toast { transition: none; }
+  }
   @keyframes pulse { 0%,100% { opacity: .35; } 50% { opacity: .7; } }
   .error {
     background: rgba(255,46,99,.08); border: 1px solid rgba(255,46,99,.3);
@@ -230,6 +236,7 @@
     <div class="app skeleton"><div class="app-top"><div class="app-icon">?</div><div class="app-meta" style="flex:1"><h3>Loading…</h3><div class="dev">Fetching apps.json</div></div></div></div>
   </div>
   <div id="error-slot"></div>
+  <noscript><div class="error">JavaScript is needed to list the apps here, but you can still add the source with the URL above.</div></noscript>
 
   <!-- STEPS -->
   <h2 class="section">How to install</h2>
@@ -268,7 +275,7 @@
   const enc = encodeURIComponent(SOURCE_URL);
   document.getElementById("add-altstore").href  = "altstore://source?url=" + enc;
   document.getElementById("add-sidestore").href = "sidestore://source?url=" + enc;
-  document.getElementById("add-feather").href   = "feather://source?url=" + enc;
+  document.getElementById("add-feather").href   = "feather://source/" + SOURCE_URL;
 
   // --- Copy button --------------------------------------------------------
   copyBtn.addEventListener("click", async () => {
@@ -323,7 +330,7 @@
     const v = latestVersion(app);
     const initial = (app.name || "?").trim().charAt(0).toUpperCase();
     const iconHTML = app.iconURL
-      ? `<img src="${esc(app.iconURL)}" alt="" onerror="this.replaceWith(document.createTextNode('${esc(initial)}'))">`
+      ? `<img src="${esc(app.iconURL)}" alt="" data-initial="${esc(initial)}">`
       : esc(initial);
 
     const tags = [];
@@ -363,6 +370,11 @@
       return;
     }
     appsEl.innerHTML = apps.map(renderApp).join("");
+    appsEl.querySelectorAll(".app-icon img").forEach(img => {
+      img.addEventListener("error", () => {
+        img.replaceWith(document.createTextNode(img.dataset.initial || "?"));
+      }, { once: true });
+    });
 
     // Pick newest date across versions for the status pill
     const dates = [];
