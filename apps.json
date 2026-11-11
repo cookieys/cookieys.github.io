@@ -5,7 +5,6 @@
   "subtitle": "Auto-tracking YTKACE releases",
   "description": "Mirrors the latest itzzace/ytkace release as a sideloadable source.",
   "iconURL": "https://raw.githubusercontent.com/itzzace/ytkace/main/icon.png",
-  "headerURL": "",
   "website": "https://github.com/itzzace/ytkace",
   "tintColor": "#FF0000",
   "featuredApps": [],
