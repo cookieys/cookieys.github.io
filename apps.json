@@ -1,0 +1,38 @@
+{
+  "name": "YTKACE Repo",
+  "identifier": "com.hi.ytkace.repo",
+  "sourceURL": "https://raw.githubusercontent.com/yourusername/yourrepo/main/apps.json",
+  "apps": [
+    {
+      "name": "YTKACE (iOS 17+)",
+      "bundleIdentifier": "com.google.ios.youtube",
+      "developerName": "itzzace",
+      "subtitle": "YouTube enhancer for iOS 17+",
+      "localizedDescription": "Automatically updated from the latest GitHub release.",
+      "iconURL": "https://itzzace.github.io/ytkace/icon.png", 
+      "versions": [
+        {
+          "version": "1.1.7",
+          "date": "2026-11-10",
+          "downloadURL": "https://github.com/itzzace/ytkace/releases/download/v1.1.7/YTKACE_1.1.7_YouTube_21.45.4.ipa",
+          "size": 12345678
+        }
+      ]
+    },
+    {
+      "name": "YTKACE (iOS 16)",
+      "bundleIdentifier": "com.google.ios.youtube.ios16", 
+      "developerName": "itzzace",
+      "subtitle": "YouTube enhancer for iOS 16",
+      "localizedDescription": "Automatically updated from the latest GitHub release.",
+      "versions": [
+        {
+          "version": "1.1.7",
+          "date": "2026-11-10",
+          "downloadURL": "https://github.com/itzzace/ytkace/releases/download/v1.1.7/YTKACE_1.1.7_YouTube_iOS16_21.33.6.ipa",
+          "size": 12345678
+        }
+      ]
+    }
+  ]
+}
