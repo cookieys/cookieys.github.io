@@ -1,14 +1,402 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Host</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cookiey's Repo — YTKACE Source</title>
+<meta name="description" content="An iOS sideloading source that auto-tracks the latest YTKACE release.">
+<meta name="theme-color" content="#0b0b0f">
+<meta property="og:title" content="Cookiey's Repo — YTKACE Source">
+<meta property="og:description" content="Auto-tracks the latest itzzace/ytkace release. Add to AltStore, SideStore, or Feather.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cookieys.github.io/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%AA%3C/text%3E%3C/svg%3E">
+
+<style>
+  :root {
+    --bg: #0b0b0f;
+    --bg-2: #121219;
+    --card: #16161f;
+    --card-2: #1c1c28;
+    --border: #262636;
+    --text: #f4f4f8;
+    --muted: #9a9ab0;
+    --accent: #ff2e63;
+    --accent-2: #ff6a3d;
+    --ok: #38d39f;
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(0,0,0,.45);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(255,46,99,.15), transparent 60%),
+      radial-gradient(1000px 500px at 90% 0%, rgba(255,106,61,.12), transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  /* ---------- Header ---------- */
+  header.hero { display: flex; align-items: center; gap: 20px; padding: 8px 0 28px; }
+  .hero-icon {
+    width: 72px; height: 72px; border-radius: 18px; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: 34px;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    box-shadow: 0 12px 30px rgba(255,46,99,.35);
+  }
+  .hero-text h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -.02em; }
+  .hero-text p { margin: 0; color: var(--muted); font-size: 15px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; letter-spacing: .02em;
+    padding: 4px 10px; border-radius: 999px;
+    background: rgba(56,211,159,.12); color: var(--ok);
+    border: 1px solid rgba(56,211,159,.25);
+    margin-top: 8px;
+  }
+  .pill.warn { background: rgba(255,106,61,.12); color: var(--accent-2); border-color: rgba(255,106,61,.3); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  /* ---------- Source URL bar ---------- */
+  .sourcebar {
+    display: flex; gap: 8px; align-items: stretch;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 8px; margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+  }
+  .sourcebar input {
+    flex: 1 1 260px; min-width: 0;
+    background: transparent; color: var(--text);
+    border: 0; outline: 0; padding: 10px 12px;
+    font-family: var(--mono); font-size: 13.5px;
+  }
+  .btn {
+    appearance: none; border: 0; cursor: pointer;
+    font: inherit; font-weight: 600; font-size: 14px;
+    padding: 10px 14px; border-radius: 10px;
+    background: var(--card-2); color: var(--text);
+    border: 1px solid var(--border);
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform .06s ease, background .15s ease, border-color .15s ease;
+    text-decoration: none;
+  }
+  .btn:hover { background: #24243a; }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary {
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 8px 22px rgba(255,46,99,.3);
+  }
+  .btn.primary:hover { filter: brightness(1.06); background: linear-gradient(140deg, var(--accent), var(--accent-2)); }
+  .btn.ghost { background: transparent; }
+
+  /* ---------- Add to buttons row ---------- */
+  .addto { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+  .addto .btn { flex: 1 1 180px; justify-content: center; padding: 12px 14px; }
+
+  /* ---------- Section titles ---------- */
+  h2.section {
+    font-size: 13px; text-transform: uppercase; letter-spacing: .14em;
+    color: var(--muted); font-weight: 700; margin: 32px 0 12px;
+  }
+
+  /* ---------- App cards ---------- */
+  .apps { display: grid; gap: 14px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .apps { grid-template-columns: 1fr 1fr; } }
+
+  .app {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 14px;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .app:hover { border-color: #343450; }
+  .app-top { display: flex; gap: 14px; align-items: flex-start; }
+  .app-icon {
+    width: 56px; height: 56px; border-radius: 14px; flex: 0 0 auto;
+    background: linear-gradient(140deg, #ff0033, #ff6a3d);
+    display: grid; place-items: center; overflow: hidden;
+    font-weight: 800; color: white; font-size: 22px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .app-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .app-meta { min-width: 0; }
+  .app-meta h3 {
+    margin: 0 0 2px; font-size: 16px; letter-spacing: -.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .app-meta .dev { color: var(--muted); font-size: 13px; }
+  .app-desc { color: var(--muted); font-size: 13.5px; margin: 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .tag {
+    font-family: var(--mono); font-size: 11.5px;
+    padding: 3px 8px; border-radius: 999px;
+    background: rgba(255,255,255,.04); border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .tag.accent { color: var(--accent); border-color: rgba(255,46,99,.3); background: rgba(255,46,99,.08); }
+  .app-actions { display: flex; gap: 8px; margin-top: auto; }
+  .app-actions .btn { flex: 1; justify-content: center; }
+
+  /* ---------- Skeleton / error ---------- */
+  .skeleton { opacity: .6; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: .35; } 50% { opacity: .7; } }
+  .error {
+    background: rgba(255,46,99,.08); border: 1px solid rgba(255,46,99,.3);
+    border-radius: 12px; padding: 14px 16px; color: #ffb3c1; font-size: 14px;
+  }
+  .error code { font-family: var(--mono); background: rgba(0,0,0,.3); padding: 1px 6px; border-radius: 4px; }
+
+  /* ---------- Steps ---------- */
+  .steps {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 8px 20px 8px;
+  }
+  .step { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .step:last-child { border-bottom: 0; }
+  .step-num {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700;
+    background: rgba(255,46,99,.12); color: var(--accent);
+    border: 1px solid rgba(255,46,99,.3);
+  }
+  .step-body b { display: block; margin-bottom: 2px; }
+  .step-body span { color: var(--muted); font-size: 13.5px; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 13px;
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-between;
+  }
+  footer a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted #3a3a52; }
+  footer a:hover { color: var(--text); border-bottom-color: var(--text); }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 120%);
+    background: #1f1f2b; border: 1px solid var(--border);
+    color: var(--text); padding: 10px 16px; border-radius: 10px;
+    font-size: 14px; box-shadow: var(--shadow);
+    transition: transform .25s ease, opacity .25s ease;
+    opacity: 0; pointer-events: none; z-index: 50;
+  }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; }
+</style>
 </head>
+<body>
+<main class="wrap">
 
-<body style="background:#111; color:#eee; font-family:sans-serif; text-align:center; padding-top:50px;">
-    <h2>Static Host Online</h2>
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-icon" aria-hidden="true">🍪</div>
+    <div class="hero-text">
+      <h1>Cookiey's Repo</h1>
+      <p>Auto-tracking the latest <b>YTKACE</b> release.</p>
+      <span class="pill" id="status-pill"><span class="dot"></span> Loading…</span>
+    </div>
+  </header>
+
+  <!-- SOURCE URL + COPY -->
+  <div class="sourcebar">
+    <input id="source-url" type="text" readonly value="https://cookieys.github.io/apps.json" aria-label="Source URL">
+    <button class="btn" id="copy-btn" type="button">Copy</button>
+    <a class="btn ghost" href="apps.json" target="_blank" rel="noopener">View JSON</a>
+  </div>
+
+  <!-- ADD TO … -->
+  <div class="addto">
+    <a class="btn primary" id="add-altstore" href="#">Add to AltStore</a>
+    <a class="btn" id="add-sidestore" href="#">Add to SideStore</a>
+    <a class="btn" id="add-feather" href="#">Add to Feather</a>
+  </div>
+
+  <!-- APPS (populated by JS) -->
+  <h2 class="section">Apps</h2>
+  <div class="apps" id="apps">
+    <div class="app skeleton"><div class="app-top"><div class="app-icon">?</div><div class="app-meta" style="flex:1"><h3>Loading…</h3><div class="dev">Fetching apps.json</div></div></div></div>
+    <div class="app skeleton"><div class="app-top"><div class="app-icon">?</div><div class="app-meta" style="flex:1"><h3>Loading…</h3><div class="dev">Fetching apps.json</div></div></div></div>
+  </div>
+  <div id="error-slot"></div>
+
+  <!-- STEPS -->
+  <h2 class="section">How to install</h2>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><b>Install a sideloading tool</b><span>You need <a href="https://altstore.io" target="_blank" rel="noopener">AltStore</a>, <a href="https://sidestore.io" target="_blank" rel="noopener">SideStore</a>, or <a href="https://github.com/khcrysalis/Feather" target="_blank" rel="noopener">Feather</a> on your device.</span></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><b>Add this source</b><span>Tap one of the buttons above, or paste the URL into your app's "Add Source" field.</span></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><b>Install YTKACE</b><span>Pick the correct build for your iOS version (16 vs 17+) and tap Install.</span></div></div>
+  </div>
+
+  <footer>
+    <span>Not affiliated with itzzace or Google. Use at your own risk.</span>
+    <span>
+      <a href="https://github.com/itzzace/ytkace" target="_blank" rel="noopener">Upstream</a> ·
+      <a href="https://github.com/cookieys/cookieys.github.io" target="_blank" rel="noopener">This repo</a>
+    </span>
+  </footer>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  const SOURCE_URL = "https://cookieys.github.io/apps.json";
+  const sourceInput = document.getElementById("source-url");
+  const copyBtn     = document.getElementById("copy-btn");
+  const appsEl      = document.getElementById("apps");
+  const errorSlot   = document.getElementById("error-slot");
+  const statusPill  = document.getElementById("status-pill");
+  const toast       = document.getElementById("toast");
+
+  sourceInput.value = SOURCE_URL;
+
+  // --- Deep links ---------------------------------------------------------
+  const enc = encodeURIComponent(SOURCE_URL);
+  document.getElementById("add-altstore").href  = "altstore://source?url=" + enc;
+  document.getElementById("add-sidestore").href = "sidestore://source?url=" + enc;
+  document.getElementById("add-feather").href   = "feather://source?url=" + enc;
+
+  // --- Copy button --------------------------------------------------------
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(SOURCE_URL);
+      showToast("Source URL copied ✨");
+    } catch {
+      sourceInput.select();
+      document.execCommand && document.execCommand("copy");
+      showToast("Source URL copied");
+    }
+  });
+
+  // --- Toast --------------------------------------------------------------
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+  }
+
+  // --- Helpers ------------------------------------------------------------
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+  function fmtSize(b) {
+    if (!b || isNaN(b)) return "";
+    const u = ["B","KB","MB","GB"]; let i = 0, n = Number(b);
+    while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+    return n.toFixed(n < 10 ? 1 : 0) + " " + u[i];
+  }
+  function latestVersion(app) {
+    if (!app.versions || !app.versions.length) return null;
+    // Prefer first entry; if dates exist, pick newest
+    const withDates = app.versions.filter(v => v.date);
+    if (withDates.length) {
+      return withDates.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+    }
+    return app.versions[0];
+  }
+
+  function setStatus(kind, text) {
+    statusPill.className = "pill" + (kind === "warn" ? " warn" : "");
+    statusPill.innerHTML = '<span class="dot"></span>' + esc(text);
+  }
+
+  // --- Render -------------------------------------------------------------
+  function renderApp(app) {
+    const v = latestVersion(app);
+    const initial = (app.name || "?").trim().charAt(0).toUpperCase();
+    const iconHTML = app.iconURL
+      ? `<img src="${esc(app.iconURL)}" alt="" onerror="this.replaceWith(document.createTextNode('${esc(initial)}'))">`
+      : esc(initial);
+
+    const tags = [];
+    if (v && v.version)   tags.push(`<span class="tag accent">v${esc(v.version)}</span>`);
+    if (v && v.minOSVersion) tags.push(`<span class="tag">iOS ${esc(v.minOSVersion)}+</span>`);
+    if (v && v.size)      tags.push(`<span class="tag">${esc(fmtSize(v.size))}</span>`);
+    if (app.category)     tags.push(`<span class="tag">${esc(app.category)}</span>`);
+
+    const dl = v && v.downloadURL
+      ? `<a class="btn primary" href="${esc(v.downloadURL)}" target="_blank" rel="noopener">Download IPA</a>`
+      : `<a class="btn primary" href="${esc(SOURCE_URL)}" target="_blank" rel="noopener">Open Source</a>`;
+
+    const dev = app.developerName ? `by ${esc(app.developerName)}` : "";
+    const desc = app.subtitle || app.localizedDescription || "";
+
+    return `
+      <article class="app">
+        <div class="app-top">
+          <div class="app-icon">${iconHTML}</div>
+          <div class="app-meta">
+            <h3>${esc(app.name || "Untitled")}</h3>
+            <div class="dev">${dev}${dev && app.identifier ? " · " : ""}${esc(app.identifier || app.bundleIdentifier || "")}</div>
+          </div>
+        </div>
+        ${desc ? `<p class="app-desc">${esc(desc)}</p>` : ""}
+        <div class="tags">${tags.join("")}</div>
+        <div class="app-actions">${dl}</div>
+      </article>
+    `;
+  }
+
+  function renderRepo(repo) {
+    const apps = Array.isArray(repo.apps) ? repo.apps : [];
+    if (!apps.length) {
+      appsEl.innerHTML = `<div class="error">Source loaded, but no apps found in <code>apps.json</code>.</div>`;
+      setStatus("warn", "Source loaded — no apps");
+      return;
+    }
+    appsEl.innerHTML = apps.map(renderApp).join("");
+
+    // Pick newest date across versions for the status pill
+    const dates = [];
+    apps.forEach(a => (a.versions || []).forEach(v => v.date && dates.push(new Date(v.date))));
+    if (dates.length) {
+      const latest = new Date(Math.max.apply(null, dates));
+      setStatus("ok", "Live · updated " + latest.toISOString().slice(0,10));
+    } else {
+      setStatus("ok", `Live · ${apps.length} app${apps.length === 1 ? "" : "s"}`);
+    }
+  }
+
+  function showError(msg, detail) {
+    setStatus("warn", "Failed to load source");
+    errorSlot.innerHTML = `<div class="error" style="margin-top:12px">
+      <b>Couldn't fetch <code>apps.json</code>.</b><br>
+      ${esc(msg)}${detail ? `<br><small>${esc(detail)}</small>` : ""}
+      <br><br>You can still add the source manually using the URL above.
+    </div>`;
+    appsEl.innerHTML = "";
+  }
+
+  // --- Fetch --------------------------------------------------------------
+  (async function load() {
+    try {
+      const res = await fetch("./apps.json", { cache: "no-cache" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const repo = await res.json();
+      renderRepo(repo);
+    } catch (err) {
+      showError(err.message || "Unknown error", "If this page is hosted locally, make sure apps.json is in the same folder.");
+    }
+  })();
+})();
+</script>
 </body>
-
 </html>
