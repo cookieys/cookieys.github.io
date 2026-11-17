@@ -8,8 +8,10 @@ ver, date = rel["tag_name"].lstrip("v"), rel["published_at"]
 body = (rel.get("body") or "").strip()
 
 VARIANTS = [
-    {"name": "YTKACE", "id": "com.google.ios.youtube", "ios16": False, "minOS": "17.0"},
-    {"name": "YTKACE (iOS 16)", "id": "com.google.ios.youtube.ios16", "ios16": True, "minOS": "16.0"},
+    {"name": "YTKACE", "id": "com.google.ios.youtube", "ios16": False, "minOS": "17.0",
+     "icon": "https://cookieys.github.io/icons/ytkace.png"},
+    {"name": "YTKACE (iOS 16)", "id": "com.google.ios.youtube.ios16", "ios16": True, "minOS": "16.0",
+     "icon": "https://cookieys.github.io/icons/ytkace-ios16.png"},
 ]
 
 path = Path("apps.json")
@@ -47,7 +49,8 @@ for var in VARIANTS:
         app["versions"] = ([entry] + app["versions"])[:20]
         changed = True
 
-    app.update(name=var["name"], subtitle=f"YouTube {yt} · iOS {'16' if var['ios16'] else '17'}+",
+        app.update(name=var["name"], iconURL=var["icon"],
+               subtitle=f"YouTube {yt} · iOS {'16' if var['ios16'] else '17'}+",
                version=ver, versionDate=date, versionDescription=body,
                downloadURL=a["browser_download_url"], size=a["size"],
                minOSVersion=var["minOS"])
