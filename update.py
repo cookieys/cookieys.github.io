@@ -4,21 +4,13 @@ from pathlib import Path
 API = "https://api.github.com/repos/itzzace/ytkace/releases/latest"
 req = urllib.request.Request(API, headers={"User-Agent": "source-updater"})
 rel = json.load(urllib.request.urlopen(req))
-
 ver, date = rel["tag_name"].lstrip("v"), rel["published_at"]
 body = (rel.get("body") or "").strip()
-ipas = [a for a in rel["assets"] if a["name"].endswith(".ipa")]
 
-def entry(a):
-    v = {"version": ver, "date": date, "localizedDescription": body,
-         "downloadURL": a["browser_download_url"], "size": a["size"],
-         "minOSVersion": "17.0"}
-    if "iOS16" in a["name"]:
-        v.update(minOSVersion="16.0", maxOSVersion="16.99")
-    return v
-
-new = [entry(a) for a in ipas]
-primary = next((v for v in new if "maxOSVersion" not in v), new[0])
+VARIANTS = [
+    {"name": "YTKACE", "id": "com.google.ios.youtube", "ios16": False, "minOS": "17.0"},
+    {"name": "YTKACE (iOS 16)", "id": "com.google.ios.youtube.ios16", "ios16": True, "minOS": "16.0"},
+]
 
 path = Path("apps.json")
 src = json.loads(path.read_text()) if path.exists() else {
@@ -26,19 +18,41 @@ src = json.loads(path.read_text()) if path.exists() else {
     "subtitle": "Auto-tracks itzzace/ytkace", "tintColor": "FF0000",
     "apps": [], "news": []}
 
-app = next((a for a in src["apps"] if a["bundleIdentifier"] == "com.google.ios.youtube"), None)
-if app is None:
-    app = {"name": "YTKACE", "bundleIdentifier": "com.google.ios.youtube",
-           "developerName": "itzzace", "subtitle": "YouTube with downloads, SponsorBlock & more",
-           "localizedDescription": "YouTube enhanced with YTKACE. Auto-tracked from github.com/itzzace/ytkace.",
-           "iconURL": "https://github.com/itzzace.png", "tintColor": "FF0000", "versions": []}
-    src["apps"].append(app)
+changed = False
+for var in VARIANTS:
+    assets = [a for a in rel["assets"]
+              if a["name"].endswith(".ipa") and ("iOS16" in a["name"]) == var["ios16"]]
+    if not assets:
+        continue
+    a = assets[0]
+    yt = a["name"].rsplit("_", 1)[-1].removesuffix(".ipa")  # YouTube base version
 
-known = {v["downloadURL"] for v in app["versions"]}
-if any(v["downloadURL"] not in known for v in new):
-    app["versions"] = (new + app["versions"])[:20]
-    app.update(version=ver, versionDate=date, versionDescription=body,
-               downloadURL=primary["downloadURL"], size=primary["size"])
+    app = next((x for x in src["apps"] if x["bundleIdentifier"] == var["id"]), None)
+    if app is None:
+        app = {"bundleIdentifier": var["id"], "developerName": "itzzace",
+               "localizedDescription": "YouTube enhanced with YTKACE. Auto-tracked from github.com/itzzace/ytkace.",
+               "iconURL": "https://github.com/itzzace.png", "tintColor": "FF0000",
+               "versions": []}
+        src["apps"].append(app)
+        changed = True
+
+    # keep only this variant's history (cleans up the old mixed entry)
+    app["versions"] = [v for v in app["versions"]
+                       if ("iOS16" in v["downloadURL"]) == var["ios16"]]
+
+    entry = {"version": ver, "date": date, "localizedDescription": body,
+             "downloadURL": a["browser_download_url"], "size": a["size"],
+             "minOSVersion": var["minOS"]}
+    if entry["downloadURL"] not in {v["downloadURL"] for v in app["versions"]}:
+        app["versions"] = ([entry] + app["versions"])[:20]
+        changed = True
+
+    app.update(name=var["name"], subtitle=f"YouTube {yt} · iOS {'16' if var['ios16'] else '17'}+",
+               version=ver, versionDate=date, versionDescription=body,
+               downloadURL=a["browser_download_url"], size=a["size"],
+               minOSVersion=var["minOS"])
+
+if changed:
     path.write_text(json.dumps(src, indent=2, ensure_ascii=False) + "\n")
     print(f"Updated to {ver}")
 else:
