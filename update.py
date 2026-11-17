@@ -20,7 +20,6 @@ src = json.loads(path.read_text()) if path.exists() else {
     "subtitle": "Auto-tracks itzzace/ytkace", "tintColor": "FF0000",
     "apps": [], "news": []}
 
-changed = False
 for var in VARIANTS:
     assets = [a for a in rel["assets"]
               if a["name"].endswith(".ipa") and ("iOS16" in a["name"]) == var["ios16"]]
@@ -33,10 +32,8 @@ for var in VARIANTS:
     if app is None:
         app = {"bundleIdentifier": var["id"], "developerName": "itzzace",
                "localizedDescription": "YouTube enhanced with YTKACE. Auto-tracked from github.com/itzzace/ytkace.",
-               "iconURL": "https://github.com/itzzace.png", "tintColor": "FF0000",
-               "versions": []}
+               "tintColor": "FF0000", "versions": []}
         src["apps"].append(app)
-        changed = True
 
     # keep only this variant's history (cleans up the old mixed entry)
     app["versions"] = [v for v in app["versions"]
@@ -47,16 +44,12 @@ for var in VARIANTS:
              "minOSVersion": var["minOS"]}
     if entry["downloadURL"] not in {v["downloadURL"] for v in app["versions"]}:
         app["versions"] = ([entry] + app["versions"])[:20]
-        changed = True
 
-        app.update(name=var["name"], iconURL=var["icon"],
+    app.update(name=var["name"], iconURL=var["icon"],
                subtitle=f"YouTube {yt} · iOS {'16' if var['ios16'] else '17'}+",
                version=ver, versionDate=date, versionDescription=body,
                downloadURL=a["browser_download_url"], size=a["size"],
                minOSVersion=var["minOS"])
 
-if changed:
-    path.write_text(json.dumps(src, indent=2, ensure_ascii=False) + "\n")
-    print(f"Updated to {ver}")
-else:
-    print("Already up to date")
+path.write_text(json.dumps(src, indent=2, ensure_ascii=False) + "\n")
+print(f"Source at {ver}")
